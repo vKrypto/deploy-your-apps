@@ -6,3 +6,11 @@
 	path = server_stack/docker-stack
 	url = https://github.com/vKrypto/deploy-your-code-on-docker-stack
 	branch = main
+[submodule "monitoring_stack/elk/docker-compose"]
+	path = monitoring_stack/elk/docker-compose
+	url = https://github.com/vKrypto/elk-monitoring-stack-with-docker-compose
+	branch = main
+[submodule "monitoring_stack/elk/docker-stack"]
+	path = monitoring_stack/elk/docker-stack
+	url = https://github.com/vKrypto/elk-monitoring-stack-with-docker-stack
+	branch = main
