@@ -1,1 +1,1 @@
-# deploy-your-apps
+# deploy-your-server
