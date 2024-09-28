@@ -1,0 +1,8 @@
+[submodule "server_stack/docker-compose"]
+	path = server_stack/docker-compose
+	url = https://github.com/vKrypto/deploy-your-code-on-docker-compose
+	branch = main
+[submodule "server_stack/docker-stack"]
+	path = server_stack/docker-stack
+	url = https://github.com/vKrypto/deploy-your-code-on-docker-stack
+	branch = main
