@@ -8,7 +8,7 @@ This guide walks you through setting up **read replicas** using the Bitnami Post
 
 You can find the full code and configuration from Link below:
 
-[Check out the GitHub repository for the code](https://github.com/your-username/your-repo-link)
+[Check out the GitHub repository for the code](https://github.com/vKrypto/deploy-your-server/tree/main/db_stack/postgres/docker-compose/async_replication/streaming_replication_using_bitnami)
 
 ---
 
