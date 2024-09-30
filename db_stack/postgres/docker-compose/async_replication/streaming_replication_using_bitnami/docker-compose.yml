@@ -23,6 +23,8 @@ x-postgres-common:
     interval: 10s
     timeout: 5s
     retries: 5
+  networks:
+    - bitnami_db_network
 
 services:
   master_db:
@@ -69,7 +71,7 @@ services:
       - slave_db1
       - slave_db2
     networks:
-      - app_network
+      - bitnami_db_network
     healthcheck:
       test: ["CMD-SHELL", "netstat -plant | grep :5432"]
       interval: 30s
@@ -82,7 +84,7 @@ volumes:
     driver: local
 
 networks:
-  app_network:
+  bitnami_db_network:
     driver: bridge
     ipam:
       config:
