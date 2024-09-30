@@ -1,0 +1,131 @@
+# version: '3.8'
+
+# x-postgres-environment:
+#   &postgres-environment
+#   POSTGRES_USER:  ${POSTGRES_USER:-postgres}
+#   POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+#   REPLICATION_USER: ${REPLICATION_USER:-replication_user}
+#   REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:-replication_password}
+#   POSTGRES_DB: ${DB_NAME}
+#   LANG: en_US.UTF-8
+#   LC_ALL: en_US.UTF-8
+#   MASTER_HOST: master_db
+#   MASTER_PORT: 5432
+
+# # common settings
+# x-postgres-common:
+#   &postgres-common
+#   image: postgres:latest
+#   restart: always
+#   command: postgres -c 'config_file=/etc/postgresql/custom_conf.conf'
+#   environment:
+#     <<: *postgres-environment
+#   healthcheck:
+#     test: 'pg_isready -U ${POSTGRES_USER:-postgres} --dbname=postgres'
+#     interval: 10s
+#     timeout: 5s
+#     retries: 5
+#   networks:
+#       - app_network
+
+# services:
+
+#   # Databases
+#   master_db:
+#     <<: *postgres-common
+#     container_name: master_db  # do not change the name, otherwise you might have to change other settings also
+#     environment:
+#       <<: *postgres-environment
+#       SLAVE_CONTAINERS: "slave_db1,slave_db2,slave_db3" # for creating replica slot 
+#       POSTGRES_HOST_AUTH_METHOD: "scram-sha-256\nhost replication postgres 192.168.0.0/22 md5"
+#       POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256 --auth-local=scram-sha-256"
+#     volumes:
+#       - ./docker_fs/master_db:/var/lib/postgresql/data
+#       - ./conf/master_postgres.conf:/etc/postgresql/custom_conf.conf
+#       - ./conf/master_init.sh:/docker-entrypoint-initdb.d/master_init.sh
+
+#   slave_db1:
+#     <<: *postgres-common
+#     container_name: slave_db1
+#     environment:
+#       <<: *postgres-environment
+#       CONTAINER_NAME: "slave_db1"
+#     volumes:
+#       - ./docker_fs/slave_db1:/var/lib/postgresql/data
+#       - ./conf/slave_postgres.conf:/etc/postgresql/custom_conf.conf
+#       - ./conf/slave_init.sh:/docker-entrypoint-initdb.d/slave_init.sh
+#     depends_on:
+#       - master_db
+  
+#   slave_db2:
+#     <<: *postgres-common
+#     container_name: slave_db2
+#     environment:
+#       <<: *postgres-environment
+#       CONTAINER_NAME: "slave_db2"
+#     volumes:
+#       - ./docker_fs/slave_db2:/var/lib/postgresql/data
+#       - ./conf/slave_postgres.conf:/etc/postgresql/custom_conf.conf
+#       - ./conf/slave_init.sh:/docker-entrypoint-initdb.d/slave_init.sh
+#     depends_on:
+#       - master_db
+  
+#   slave_db3:
+#     <<: *postgres-common
+#     container_name: slave_db3
+#     environment:
+#       <<: *postgres-environment
+#       CONTAINER_NAME: "slave_db3"
+#     volumes:
+#       - ./docker_fs/slave_db3:/var/lib/postgresql/data
+#       - ./conf/slave_postgres.conf:/etc/postgresql/custom_conf.conf
+#       - ./conf/slave_init.sh:/docker-entrypoint-initdb.d/slave_init.sh
+#     depends_on:
+#       - master_db
+  
+# networks:
+#   app_network:
+#     driver: bridge
+#     ipam:
+#       config:
+#         - subnet: 192.168.0.0/22  # usable ip range 192.168.1.1 - 192.168.1.14
+
+version: "3.8"
+
+services:
+  postgres_master:
+    image: postgres:latest
+    container_name: postgres_master
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: masterpass
+      POSTGRES_DB: mydb
+    volumes:
+      - ./master_data:/var/lib/postgresql/data
+    command:
+      - "postgres"
+      - "-c"
+      - "wal_level=replica"
+      - "-c"
+      - "max_wal_senders=5"
+      - "-c"
+      - "archive_mode=on"
+      - "-c"
+      - "archive_command='cp %p /var/lib/postgresql/data/pg_wal/%f'"
+      - "-c"
+      - "hot_standby=on"
+
+  postgres_replica:
+    image: postgres:latest
+    container_name: postgres_replica
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: replicapass
+    volumes:
+      - ./replica_data:/var/lib/postgresql/data
+    depends_on:
+      - postgres_master
+    command:
+      - "postgres"
+      - "-c"
+      - "hot_standby=on"
