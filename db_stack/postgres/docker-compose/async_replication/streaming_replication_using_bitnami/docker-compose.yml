@@ -30,8 +30,8 @@ services:
   master_db:
     container_name: master_db
     <<: *postgres-common
-    # volumes:
-    #   - 'postgresql_master_data:/bitnami/postgresql'
+    volumes:
+      - 'postgresql_master_data:/bitnami/postgresql'
     environment:
       <<: *postgres-environment
       POSTGRESQL_REPLICATION_MODE: master
